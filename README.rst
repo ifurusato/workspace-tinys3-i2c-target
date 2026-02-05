@@ -9,10 +9,14 @@ system for the KRZ04 robot, see the `krzos`_ repository.
 
 .. _krzos: https://github.com/ifurusato/krzos
 
-This permits bidirectional transactions between master and slave, with data returned
-up to 32 characters. Round-trip performance is about 11ms, but if you are not requesting
-returned data (other than "ACK" or "ERR") this can be set down to ~3-5ms. This setting
-may be found in ``tinys3_controller/i2c_master.py``.
+This permits bidirectional transactions between master and slave, with data
+returned up to 32 characters. Round-trip performance is about 11ms, but if you
+are not requesting returned data (other than "ACK" or "ERR") this can be set
+down to ~3-5ms. This setting may be found in ``tinys3_controller/i2c_master.py``.
+
+This was developed using CPython on a Raspberry Pi as I2C master, and MicroPython
+on an Unexpected Maker TinyS3 as slave, but could easily be adapted to different
+hardware.
 
 The current Controller implementation is largely focused on controlling the TinyS3's
 NeoPixel, but is intended to be expanded as per more expansive project requirements.
@@ -22,10 +26,9 @@ Requirements
 ************
 
 Requires Python 3.8.5 or newer, written using Python 3.11.2.
-Support for I2CTarget requires MicroPython v1.27.0 installed on the TinyS3.
+Support for I2CTarget requires `MicroPython`_ v1.27.0 or newer installed on the TinyS3.
 
-This was developed using an Unexpected Maker TinyS3 and a Raspberry Pi, but
-could easily be adapted to different hardware.
+.. _MicroPython: https://micropython.org/download/UM_TINYS3/
 
 
 Installation
