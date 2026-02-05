@@ -12,10 +12,10 @@ system for the KRZ04 robot, see the `krzos`_ repository.
 This permits bidirectional transactions between master and slave, with data returned
 up to 32 characters. Round-trip performance is about 11ms, but if you are not requesting
 returned data (other than "ACK" or "ERR") this can be set down to ~3-5ms. This setting
-may be found in `tinys3_controller/i2c_master.py`.
+may be found in ``tinys3_controller/i2c_master.py``.
 
 The current Controller implementation is largely focused on controlling the TinyS3's
-NeoPixel, but is intended to be expanded as per more expansive project requirements. 
+NeoPixel, but is intended to be expanded as per more expansive project requirements.
 
 
 Requirements
@@ -31,12 +31,12 @@ could easily be adapted to different hardware.
 Installation
 ************
 
-Copy the ./upy/ files to your TinyS3. When restarted it will blink once initially,
+Copy the ``./upy/`` files to your TinyS3. When restarted it will blink once initially,
 and then after 7 seconds "services" will start and a heartbeat blink will occur
 every second.
 
-Executing `remote.py` will start the CLI application. Documentation for acceptable
-commands may be found in the Controller class' `process()` method.
+Executing ``remote.py`` will start the CLI application. Documentation for acceptable
+commands may be found in the Controller class' ``process()`` method.
 
 
 Files
@@ -45,12 +45,12 @@ Files
 Program files include::
 
     remote.py             # the CLI remote controller
-    
+
     tinys3_controller:    # the library directory
         __init__.py
         i2c_master.py     # the abstract I2C master class
         message_util.py   # handles message packing and unpacking, CRC8 checksums
-    
+
     upy:
         boot.py
         colors.py         # a pseudo-enum of predefined color names
@@ -59,7 +59,7 @@ Program files include::
         i2c_slave.py      # the I2C slave implementation
         main.py           # entry point into the application
         message_util.py   # same file as above
-        neopixel.py       # standard NeoPixel implementation 
+        neopixel.py       # standard NeoPixel implementation
         pixel.py          # wraps NeoPixel functionality
         tinys3.py         # TinyS3 utility class (from UM)
 
@@ -82,9 +82,13 @@ your own risk.
 Copyright & License
 *******************
 
-All contents (including software, documentation and images) Copyright 2020-2026
-by Ichiro Furusato. All rights reserved.
+The NeoPixel driver for MicroPython is distributed under the MIT license;
+Copyright (c) 2016 Damien P. George, 2021 Jim Mussared.
 
-Software and documentation are distributed under the MIT License, see LICENSE
-file included with project.
+The TinyS3 Helper Library is distribued under an MIT license, Copyright 2022
+Seon Rozenblum, Unexpected Maker.
+
+All other contents (including software, documentation and images) Copyright 2026
+by Ichiro Furusato. All rights reserved. Software and documentation are distributed
+under the MIT License, see LICENSE file included with the project.
 
