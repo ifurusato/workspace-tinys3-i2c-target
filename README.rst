@@ -83,12 +83,12 @@ Copyright & License
 *******************
 
 The NeoPixel driver for MicroPython is distributed under the MIT license;
-Copyright (c) 2016 Damien P. George, 2021 Jim Mussared.
+Copyright © 2016 Damien P. George, 2021 Jim Mussared.
 
-The TinyS3 Helper Library is distribued under an MIT license, Copyright 2022
+The TinyS3 Helper Library is distributed under an MIT license, © 2022
 Seon Rozenblum, Unexpected Maker.
 
-All other contents (including software, documentation and images) Copyright 2026
+All other contents (including software, documentation and images) ©2026
 by Ichiro Furusato. All rights reserved. Software and documentation are distributed
 under the MIT License, see LICENSE file included with the project.
 
