@@ -5,9 +5,10 @@ TinyS3 I2C Target
 An I2CTarget implementation for I2C-based remote control of a UM TinyS3, an ESP32-S3.
 
 This is a highly simplified version of the implementation used on KRZ0S, the operating
-system for the KRZ04 robot.
+system for the KRZ04 robot, see the `krzos`_ repository.
 
-https://github.com/ifurusato/krzos
+.. _krzos: https://github.com/ifurusato/krzos
+
 
 Installation
 ************
@@ -44,8 +45,7 @@ Program files include::
         pixel.py          # wraps NeoPixel functionality
         tinys3.py         # TinyS3 utility class (from UM)
 
-Yes, message_util.py is duplicated. I could be clever but prefer they are independent
-even if identical.
+.. Yes, message_util.py is duplicated. I could be clever but prefer they are independent even if identical.
 
 
 Requirements
