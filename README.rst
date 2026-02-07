@@ -1,11 +1,11 @@
-*****************
-TinyS3 I2C Target
-*****************
+************************************************
+I2C Master - Remote Control of a Microcontroller
+************************************************
 
-An I2CTarget implementation for I2C-based remote control of a UM TinyS3, an ESP32-S3.
+An I2CTarget implementation for I2C-based remote control of a microcontroller.
 
-This is a highly simplified version of the implementation used on KRZ0S, the operating
-system for the KRZ04 robot, see the `krzos`_ repository.
+This is a highly simplified version of the implementation used on KRZ0S, the
+operating system for the KRZ04 robot, see the `krzos`_ repository.
 
 .. _krzos: https://github.com/ifurusato/krzos
 
@@ -14,14 +14,16 @@ returned up to 62 characters, using a CRC8 checksum. Round-trip performance
 corresponds to message length, designed for a 39 characters packet requiring
 an 11ms delay, but if you are requesting shorter packets or only acknowledgements
 (e.g., "ACK" or "ERR") this can be set lower, down to ~3-5ms. This setting may
-be found in ``tinys3_controller/i2c_master.py``.
+be found in ``i2c_master/__init__.py``.
 
-The current master and slave implementation is intended as a demonstration
-controlling the TinyS3's NeoPixel, and is intended to be modified as necessary.
+The target device in this implementation is the Unexpected Maker TinyS3, but any 
+microcontroller with an on-board NeoPixel may be used with suitable changes to
+the configuration. If no NeoPixel is required the slave-side code may be modified
+to perform other tasks. Typically, the SDA, SCL and NeoPixel pins will need to be
+changed to match those used on the device.
 
 This was developed using CPython on a Raspberry Pi as I2C master, and MicroPython
-on an Unexpected Maker TinyS3 as slave, but could easily be adapted to different
-hardware. Typically, the SDA, SCL and NeoPixel pins will need to be changed.
+on an Unexpected Maker TinyS3 as slave, but could be adapted to different hardware. 
 
 
 Requirements
@@ -39,8 +41,8 @@ the microcontroller.
 Installation
 ************
 
-Copy the ``./upy/`` files to your TinyS3. I recommend `rshell`_ or `mpremote`_, though
-any tool will do.
+Copy the ``./upy/`` files to your microcontroller. I recommend `rshell`_ or `mpremote`_, 
+though any tool will do.
 
 .. _rshell: https://github.com/dhylands/rshell
 .. _mpremote: https://docs.micropython.org/en/latest/reference/mpremote.html
@@ -54,15 +56,15 @@ The I2C slave should start from a hardware reset, but you can start it from the
 Python REPL via "import main".
 
 The current master and slave code is meant as a demonstration, and can be modified
-as necessary. It currently just controls the NeoPixel on the TinyS3.
+as necessary. It currently just controls the NeoPixel on the microcontroller.
 
-Executing ``remote.py`` will start the CLI application. The TinyS3 must already be
-running its ``main.py`` script. Typing Ctrl-C will end the session.
+Executing ``remote.py`` will start the CLI application. The microcontroller must
+already be running its ``main.py`` script. Typing Ctrl-C will end the session.
 
 On the master, the "go" command will repeat a preconfigured command every second,
 which could be used for testing or a repeating query. "stop" will halt the loop.
 
-When the TinyS3 is restarted it will blink once initially, and then after 7 seconds
+When the microcontroller is restarted it will blink once initially, and then after 7 seconds
 its "services" will start and a heartbeat blink will occur every second. The services
 and the startup delay are meant to be expanded into an actual application usage. This
 feature can be disabled if not needed.
