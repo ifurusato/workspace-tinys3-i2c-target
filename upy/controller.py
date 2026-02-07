@@ -124,7 +124,7 @@ class Controller:
 
             elif _arg0 == "pixel":
                 # any calls to pixel disable heartbeat
-                self._heartbeat_enabled = False
+                self._enable_heartbeat(False)
                 _show_state = False
                 if self._pixel:
                     if _arg1 == 'off' or _arg1 == 'clear':
@@ -159,11 +159,11 @@ class Controller:
             elif _arg0 == "heartbeat":
                 if _arg1 == 'on':
                     self._pixel_persist = False # contradictory, so off
-                    self._heartbeat_enabled = True
+                    self._enable_heartbeat(True)
                     _exit_color = COLOR_DARK_GREEN
                     return Controller._PACKED_ACK
                 elif _arg1 == 'off':
-                    self._heartbeat_enabled = False
+                    self._enable_heartbeat(False)
                     _exit_color = COLOR_DARK_GREEN
                     return Controller._PACKED_ACK
                 else:
@@ -245,8 +245,13 @@ class Controller:
     def _start_services(self):
         time_elapsed = time.ticks_ms() - self._startup_ms
         print('starting services after {}ms'.format(time_elapsed))
-        self._heartbeat_enabled = True
+        self._enable_heartbeat(True)
         pass # whatever services to be started after a delay
+
+    def _enable_heartbeat(self, enabled):
+        self._heartbeat_enabled = enabled
+        if not enabled:
+            self._timer0.deinit()
 
     def _beat(self):
         self._pixel.set_color(0, COLOR_DARK_CYAN)

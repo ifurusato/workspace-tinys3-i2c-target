@@ -7,13 +7,17 @@
 #
 # author:   Ichiro Furusato
 # created:  2025-11-16
-# modified: 2026-02-05
+# modified: 2026-02-07
 
-I2C_ID        = 0
-I2C_ADDRESS   = 0x47
-RELOAD        = True
+# configuration for TinyS3
+I2C_ID      = 0
+I2C_ADDRESS = 0x47
+SCL_PIN     = 7
+SDA_PIN     = 6
 
-import sys, gc
+RELOAD      = True
+
+import sys
 import time
 import asyncio
 
@@ -21,6 +25,7 @@ from i2c_slave import I2CSlave
 from controller import Controller
 
 if RELOAD:
+    import gc
     # force module reload
     for mod in ['main', 'i2c_slave', 'controller']:
         if mod in sys.modules:
@@ -46,7 +51,7 @@ def start():
     try:
 
         controller = Controller()
-        slave = I2CSlave(i2c_id=I2C_ID, i2c_address=I2C_ADDRESS)
+        slave = I2CSlave(i2c_id=I2C_ID, scl=SCL_PIN, sda=SDA_PIN, i2c_address=I2C_ADDRESS)
         slave.add_callback(controller.process)
         controller.set_slave(slave)
         slave.enable()
