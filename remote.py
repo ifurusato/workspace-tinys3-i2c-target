@@ -26,7 +26,7 @@ I2C_ADDRESS      = 0x47    # I2C device address
 WORKER_DELAY_SEC = 1.0     # time between automatic polls
 REQUEST          = "data"  # poll command
 
-I2C_ADDRESS      = 0x43    # I2C device address
+#I2C_ADDRESS     = 0x43    # I2C device address for TinyFX
 
 def worker_loop(master, stop_event, lock):
     '''
