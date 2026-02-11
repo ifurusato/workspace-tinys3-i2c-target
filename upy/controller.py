@@ -104,20 +104,14 @@ class Controller:
 
     def post_process(self, cmd, arg0, arg1, arg2, arg3, arg4):
         '''
-        Post-process the arguments, returning a NACK and color if no match on arg0 occurs.
+        Post-process the arguments, returning a response and color if a match occurs.
+        Absent a match by this point is considered an error condition.
         '''
 #       print("post-process command '{}' with arg0: '{}'; arg1: '{}'; arg2: '{}'; arg3: '{}'; arg4: '{}'".format(cmd, arg0, arg1, arg2, arg3, arg4))
         if arg0 == "__extend_here__":
             return None, None
         else:
-            print("WARNING: unrecognised command '{}' as arguments: {}{}{}{}{}".format(
-                    cmd,
-                    "; arg0: '{}'".format(arg0) if arg0 else '',
-                    "; arg1: '{}'".format(arg1) if arg1 else '',
-                    "; arg2: '{}'".format(arg2) if arg2 else '',
-                    "; arg3: '{}'".format(arg3) if arg3 else '',
-                    "; arg2: '{}'".format(arg4) if arg4 else ''))
-            return Controller._PACKED_NACK, COLOR_ORANGE
+            return None, None
 
     def process(self, cmd):
         '''
@@ -248,7 +242,18 @@ class Controller:
             else:
                 # post-process
                 _response, _exit_color = self.post_process(cmd, _arg0, _arg1, _arg2, _arg3, _arg4)
-                return _response
+                if _response is not None:
+                    _exit_color = __exit_color
+                    return _response
+                else:
+                    print("WARNING: unrecognised command '{}' as arguments: {}{}{}{}{}".format(
+                            cmd,
+                            "; arg0: '{}'".format(arg0) if arg0 else '',
+                            "; arg1: '{}'".format(arg1) if arg1 else '',
+                            "; arg2: '{}'".format(arg2) if arg2 else '',
+                            "; arg3: '{}'".format(arg3) if arg3 else '',
+                            "; arg2: '{}'".format(arg4) if arg4 else ''))
+                    return Controller._PACKED_NACK, COLOR_ORANGE
 
         except Exception as e:
             print("ERROR: {} raised by controller: {}".format(type(e), e))
