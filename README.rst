@@ -48,6 +48,19 @@ though any tool will do.
 .. _mpremote: https://docs.micropython.org/en/latest/reference/mpremote.html
 
 
+Configuration
+*************
+
+In the ``upy/main.py`` script is a ``BOARD`` variable that should be set to match
+the microcontroller being used. The ``BOARD_CONFIGS`` dict contains the 
+configuration for the specified microcontroller, and can be modified as necessary.
+
+The I2C address used by the I2C slave may be found in the main.py configuration,
+and will also be printed to the console. When executing the I2C Master CLI
+application you may optionally specify the I2C address used as follows::
+
+    remote.py --address 0x47
+
 
 Usage
 *****
@@ -111,11 +124,11 @@ on the I2C master will eliminate this.
 Files
 *****
 
-Program files include::
+Files include::
 
     remote.py               # the CLI remote controller
 
-    tinys3_controller:      # the library directory
+    i2c_master:             # the I2CMaster library directory
         __init__.py
         i2c_master.py       # the abstract I2C master class
         message_util.py     # handles message packing and unpacking, CRC8 checksums
@@ -123,16 +136,37 @@ Program files include::
     upy:
         boot.py
         colors.py           # a pseudo-enum of predefined color names
-        controller.py       # the controller for handling incoming commands
+        controller.py       # the base controller class for handling incoming commands
         ctrl.py             # the slave-side CLI
+        free.py             # a utility to display free flash/memory
         i2c_slave.py        # the I2C slave implementation
         main.py             # entry point into the application
         message_util.py     # same file as above
         neopixel.py         # standard NeoPixel implementation
         pixel.py            # wraps NeoPixel functionality
-        ringcontroller.py   # controls a NeoPixel ring (subclasses the STM32Controller)
+
+Additionally, for the WeAct STM32F405 (which may be ignored if not using it)::
+
         stm32controller.py  # subclass of Controller for use with an STM32
-        tinys3.py           # TinyS3 utility class (used only on the UM TinyS3)
+        ringcontroller.py   # controller for a NeoPixel ring (subclasses the STM32Controller)
+
+Additionally, for the Raspberry Pi Pico (which may be ignored if not using it)::
+
+        picocontroller.py   # controller for a Raspberry Pi Pico
+
+Additionally, for the UM TinyS3 (which may be ignored if not using it)::
+
+        tinys3.py           # TinyS3 utility class
+
+Additionally, for the Pimoroni Tiny FX (which may be ignored if not using it)::
+
+        manual_player.py    # a player controlling mono LED outputs on the Tiny FX
+        settable.py         # a Tiny FX device that responds to set() commands
+        settable_blink.py   # a Tiny FX device that blinks according to values set via a method
+        sounds/             # a directory containing WAV files
+
+
+Sound files must be monophonic WAV format with a sample rate of 44,100Hz.
 
 .. Yes, message_util.py is duplicated. I could be clever but prefer they are independent even if identical.
 

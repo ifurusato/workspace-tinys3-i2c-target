@@ -18,7 +18,7 @@ from i2c_slave import I2CSlave
 # configuration ┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
 RELOAD_MODULES = True
-BOARD = 'STM32F405'  # 'TINYS3' | 'TINYFX' | 'RPI_PICO' | 'STM32F405' | 'ESP32_TINY'
+BOARD = 'TINYFX'  # 'TINYS3' | 'TINYFX' | 'RPI_PICO' | 'STM32F405' | 'ESP32_TINY'
 
 BOARD_CONFIGS = {
     'TINYS3': {
@@ -33,12 +33,12 @@ BOARD_CONFIGS = {
         'color_order': 'GRB',
     },
     'TINYFX': {
-        'name': 'Pimoroni TinyFX',
+        'name': 'Pimoroni Tiny FX',
         'i2c_id': 0,
         'i2c_address': 0x45,
         'scl_pin': 17,
         'sda_pin': 16,
-        'controller_class': 'Controller',
+        'controller_class': 'TinyFxController',
         'family': 'RP2',
         'pixel_pin': None,
         'color_order': None,

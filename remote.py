@@ -7,7 +7,7 @@
 #
 # author:   Ichiro Furusato
 # created:  2025-11-16
-# modified: 2026-02-08
+# modified: 2026-02-13
 #
 # I2C master controller, with CLI option to set I2C address. Permits repeat
 # sending of a command using a worker thread loop initiated by "go" and halted
@@ -22,18 +22,17 @@ from i2c_master import I2CMaster
 # ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
 I2C_ID           = 1       # I2C bus identifier
-I2C_ADDRESS      = 0x47    # I2C device address
+I2C_ADDRESS      = 0x47    # default I2C device address
 WORKER_DELAY_SEC = 1.0     # time between automatic polls
 REQUEST          = "data"  # poll command
 
-#I2C_ADDRESS     = 0x43    # I2C device address for TinyFX
 
 def worker_loop(master, stop_event, lock):
     '''
     Runs until stop_event is set.
     Repeatedly sends a request to the slave.
     '''
-    print("Worker thread started")
+    print("worker thread started")
 
     try:
         while not stop_event.is_set():

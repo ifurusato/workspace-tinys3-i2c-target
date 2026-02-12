@@ -208,4 +208,4 @@ __marimo__/
 
 # don't ignore in tinyfx
 !tinyfx/lib/
-tinyfx/sounds/
+!upy/lib/
