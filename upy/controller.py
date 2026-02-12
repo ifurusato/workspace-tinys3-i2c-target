@@ -122,21 +122,26 @@ class Controller:
         else:
             return None, None
 
+    def print_help(self):
+        print('''
+Commands:
+
+    time get | set <timestamp>              # set/get RTC time
+    pixel off | <color> | <n> <color>       # control NeoPixel
+    persist on | off                        # persist pixel after setting
+    rgb <n> <red> <green> <blue>            # set NeoPixel to RGB
+    heartbeat on | off                      # control heartbeat flash
+    ping                                    # returns "PING"
+    data                                    # return sample data
+    reset                                   # force hardware reset
+''')
+
     def process(self, cmd):
         '''
         Processes the callback from the I2C slave, returning 'ACK', 'NACK' or 'ERR'.
-
         This calls pre_process() and post_process() in turn.
 
-        Commands:
-            time get | set <timestamp>           # set/get RTC time
-            pixel off | <color> | <n> <color>    # control NeoPixel
-            persist on | off                     # persist pixel after setting
-            rgb <n> <red> <green> <blue>         # set NeoPixel to RGB
-            heartbeat on | off                   # control heartbeat flash
-            ping                                 # returns "PING"
-            data                                 # return sample data
-            reset                                # force hardware reset
+        See get_help() for list of available commands.
         '''
         _show_state = True
         if _show_state:
@@ -162,7 +167,12 @@ class Controller:
                 _exit_color = __exit_color
                 return _response
 
-            if _arg0 == "time":
+            if _arg0 == "help":
+                self.print_help()
+                _exit_color = COLOR_DARK_GREEN
+                return Controller._PACKED_ACK
+
+            elif _arg0 == "time":
 #               print('time: {}, {}'.format(_arg1, _arg2))
                 if _arg1 == 'set':
                     _exit_color = COLOR_DARK_GREEN
@@ -237,8 +247,7 @@ class Controller:
                 return Controller._PACKED_PING
 
             elif _arg0 == "data": # data request (TBD)
-                _message = self._get_data()
-                _exit_color = COLOR_FUCHSIA
+                _message, _exit_color = self._get_data()
                 return pack_message(_message)
 
             elif _arg0 == "reset":
@@ -257,11 +266,11 @@ class Controller:
                 else:
                     print("WARNING: unrecognised command '{}' as arguments: {}{}{}{}{}".format(
                             cmd,
-                            "; arg0: '{}'".format(arg0) if arg0 else '',
-                            "; arg1: '{}'".format(arg1) if arg1 else '',
-                            "; arg2: '{}'".format(arg2) if arg2 else '',
-                            "; arg3: '{}'".format(arg3) if arg3 else '',
-                            "; arg2: '{}'".format(arg4) if arg4 else ''))
+                            "; arg0: '{}'".format(_arg0) if _arg0 else '',
+                            "; arg1: '{}'".format(_arg1) if _arg1 else '',
+                            "; arg2: '{}'".format(_arg2) if _arg2 else '',
+                            "; arg3: '{}'".format(_arg3) if _arg3 else '',
+                            "; arg2: '{}'".format(_arg4) if _arg4 else ''))
                     return Controller._PACKED_NACK, COLOR_ORANGE
 
         except Exception as e:
@@ -281,7 +290,8 @@ class Controller:
         '''
         _data = '0000 1111 2222 3333 4444 5555 6666 7777'
 #       print('data: {} chars.'.format(len(_data)))
-        return _data
+        _exit_color = COLOR_FUCHSIA
+        return _data, _exit_color
 
     def _on_command(self, cmd):
         '''

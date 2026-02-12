@@ -18,7 +18,7 @@ from i2c_slave import I2CSlave
 # configuration ┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
 RELOAD_MODULES = True
-BOARD = 'RPI_PICO'  # 'TINYS3' | 'TINYFX' | 'RPI_PICO' | 'STM32F405' | 'ESP32_TINY'
+BOARD = 'STM32F405'  # 'TINYS3' | 'TINYFX' | 'RPI_PICO' | 'STM32F405' | 'ESP32_TINY'
 
 BOARD_CONFIGS = {
     'TINYS3': {
