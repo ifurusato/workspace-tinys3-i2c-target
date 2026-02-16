@@ -186,9 +186,15 @@ Additionally, for the Pimoroni Tiny FX::
         settable_blink.py   # a Tiny FX device that blinks according to values set via a method
         sounds/             # a directory containing WAV files
 
-Sound files for the Tiny FX must be monophonic WAV format with a sample rate of 44,100Hz.
+Please note that the Tiny FX files are copies from the Pimoroni `picofx`_ repository,
+distributed under the MIT license. Ideally, you should get the most recent versions there.
 
-.. Yes, the message_util.py is duplicated between master and slave implementations.
+.. _picofx: https://github.com/pimoroni/picofx
+
+Sound files for the Tiny FX must be monophonic, signed 16 bit PCM WAV format with
+a sample rate of 44,100Hz.
+
+.. The message_util.py master and slave implementations are slightly different as the latter is performance-optimised.
 
 
 Status
