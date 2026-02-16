@@ -6,7 +6,7 @@
 #
 # author:   Ichiro Furusato
 # created:  2025-11-16
-# modified: 2026-02-12
+# modified: 2026-02-15
 
 import sys
 import time
@@ -24,6 +24,7 @@ class Controller:
     _PACKED_NACK = pack_message('NACK')  # acknowledge bad command
     _PACKED_ERR  = pack_message('ERR')   # processing error occurred
     _PACKED_PING = pack_message('PING')  # processing error occurred
+    _PACKED_DATA = pack_message('0000 1111 2222 3333 4444 5555 6666 7777') # sample data, packed
     '''
     A controller for command strings received from the I2CSlave.
 
@@ -33,7 +34,9 @@ class Controller:
     def __init__(self, config):
         self._startup_ms            = time.ticks_ms()
         self._config                = config
+        self._name                  = config['name']
         self._family                = config['family']
+#       print('family set to: {}'.format(self._family))
         self._slave                 = None
         # neopixel support
         self._pixel = self._create_pixel()
@@ -51,6 +54,10 @@ class Controller:
         self._create_pixel_timer()
         self._services_started      = False
         print('ready.')
+
+    @property
+    def name(self):
+        return self._name
 
     def _create_pixel(self):
         from pixel import Pixel
@@ -126,6 +133,7 @@ class Controller:
         print('''
 Commands:
 
+    name                                    # return the name of the configured board
     time get | set <timestamp>              # set/get RTC time
     pixel off | <color> | <n> <color>       # control NeoPixel
     persist on | off                        # persist pixel after setting
@@ -166,7 +174,11 @@ Commands:
                 _exit_color = __exit_color
                 return _response
 
-            if _arg0 == "help":
+            if _arg0 == "name":
+                _exit_color = COLOR_DARK_GREEN
+                return pack_message(self._name)
+
+            elif _arg0 == "help":
                 self.print_help()
                 _exit_color = COLOR_DARK_GREEN
                 return Controller._PACKED_ACK
@@ -254,6 +266,8 @@ Commands:
                 return Controller._PACKED_PING
 
             elif _arg0 == "data": # data request (TBD)
+#               _exit_color = COLOR_FUCHSIA
+#               return Controller._PACKED_DATA
                 _message, _exit_color = self._get_data()
                 return pack_message(_message)
 
@@ -295,7 +309,9 @@ Commands:
         '''
         Return data (TBD).
         '''
-        _data = '0000 1111 2222 3333 4444 5555 6666 7777'
+        _data = '0000 1111 2222 33333' # 20 chars
+#       _data = '0000 1111 2222 3333 4444 5555 6666 77777' # 40 characters
+#       _data = '0000 1111 2222 3333 4444 5555 6666 7777 8888 9999 AAAA BBBB CC' # 62 chars
 #       print('data: {} chars.'.format(len(_data)))
         _exit_color = COLOR_FUCHSIA
         return _data, _exit_color

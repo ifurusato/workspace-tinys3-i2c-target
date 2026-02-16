@@ -52,6 +52,9 @@ class TinyFxController(Controller):
 #       self._pixel_off_pending = False
         self._playing  = False
         # channel definitions
+        self._brightness  = 0.3
+        self._blink_duty  = 0.25
+        self._blink_speed = 0.66723
         blink_channels = [True, False, False, False, False, False] # channel 1 blinks
         self._channel1_fx = self._get_channel(1, blink_channels[0])
         self._channel2_fx = self._get_channel(2, blink_channels[1])
@@ -133,7 +136,7 @@ class TinyFxController(Controller):
         self._pixel_timer = Timer()
         self._pixel_timer.init(freq=self._pixel_timer_freq_hz, callback=self._led_off)
 
-    # Tiny FX ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+    # TinyFX ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
     def _get_channel(self, channel, blinking=False):
         '''
@@ -141,13 +144,13 @@ class TinyFxController(Controller):
         is returned per channel, e.g., channel 1 below.
         '''
         if blinking:
-            if channel == 1:
+            if channel != 1:
                 # we use a more 'irrational' speed so that the two blinking channels almost never synchronise
-                return SettableBlinkFX(speed=0.66723, phase=0.0, duty=0.25)
+                return SettableBlinkFX(speed=self._blink_speed, phase=0.0, duty=self._blink_duty)
             else:
                 return SettableBlinkFX(speed=0.5, phase=0.0, duty=0.015)
         else:
-            return SettableFX(brightness=0.8)
+            return SettableFX(brightness=self._brightness)
 
     def _get_pir(self):
         '''
@@ -162,7 +165,7 @@ class TinyFxController(Controller):
         return self._pixel
 
     def tick(self, delta_ms):
-        # Tiny FX PWM
+        # TinyFX PWM
         self._player.update(delta_ms)
         if self._heartbeat_enabled:
             self._heartbeat(delta_ms)
@@ -195,6 +198,8 @@ class TinyFxController(Controller):
         Such a match precludes further processing.
         '''
 #       print("pre-process command '{}' with arg0: '{}'; arg1: '{}'; arg2: '{}'; arg3: '{}'; arg4: '{}'".format(cmd, arg0, arg1, arg2, arg3, arg4))
+        parts = cmd.split()
+
         if arg0 == "__extend_here__":
             return None, None
 

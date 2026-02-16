@@ -18,20 +18,27 @@ from .message_util import pack_message, unpack_message
 class I2CMaster:
     I2C_BUS_ID  = 1
     I2C_ADDRESS = 0x47
-    WRITE_READ_DELAY_SEC = 0.011 # this may need adjusting for packet length and reliability
+    WRITE_READ_DELAY_MS = 11
     '''
     I2C master controller.
+
+    NOTE: the WRITE_READ_DELAY_SEC may need adjusting for packet length and reliability.
+          If you're seeing the original command returned, that's because the master is
+          reading the memory buffer before the slave has had a chance to modify it. The
+          solution is to increase the delay time until this stops happening. Also, it
+          may help to increase the I2C baud rate.
 
     Args:
         i2c_id:        the I2C bus identifier (default is 1)
         i2c_address:   the I2C device address (default is 0x47)
-    ''' 
+    '''
     def __init__(self, i2c_id=None, i2c_address=None, timeset=True):
         self._i2c_bus_id  = i2c_id if i2c_id is not None else self.I2C_BUS_ID
         self._i2c_address = i2c_address if i2c_address is not None else self.I2C_ADDRESS
         self._enabled = False
         self._timeset = timeset
         self._fail_on_exception = False
+        self._delay_sec = self.WRITE_READ_DELAY_MS / 1000
         try:
             print('opening I2C bus {} at address {:#04x}'.format(self._i2c_bus_id, self._i2c_address))
             self._bus = smbus2.SMBus(self._i2c_bus_id)
@@ -55,7 +62,7 @@ class I2CMaster:
         msg_with_addr = [0x00] + list(out_msg)
         write_msg = smbus2.i2c_msg.write(self._i2c_address, msg_with_addr)
         self._bus.i2c_rdwr(write_msg)
-        time.sleep(I2CMaster.WRITE_READ_DELAY_SEC)
+        time.sleep(self._delay_sec)
         # write register address 0, then read
         write_addr = smbus2.i2c_msg.write(self._i2c_address, [0x00])
         read_msg = smbus2.i2c_msg.read(self._i2c_address, 64)

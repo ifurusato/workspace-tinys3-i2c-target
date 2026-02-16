@@ -16,25 +16,25 @@ from stm32controller import STM32Controller, PixelState
 from colors import *
 from pixel import Pixel
 
-class RingController(STM32Controller):
+#class RingController(STM32Controller):
+class RingController(Controller):
     '''
-    An implementation using a WeAct STM32F405 optionally connected to a 24 pixel NeoPixel ring.
+    An implementation connected to a 24 pixel NeoPixel ring.
     '''
     def __init__(self, config):
-        self._pixel_count = config['pixel_count']
         super().__init__(config)
-        # ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-        if self._pixel_count is None:
-            raise ValueError('pixel count is undefined.')
-        elif self._pixel_count == 0:
-            raise ValueError('pixel count is 0.')
+        self._ring_count = config['ring_count']
+        if self._ring_count is None:
+            raise ValueError('ring count is undefined.')
+        elif self._ring_count == 0:
+            raise ValueError('ring count is 0.')
 #       self._strip_pin = 'B12'
         # rotation
         self._ring_offset      = 0
         self._rotate_direction = 1 # 1 or -1
         self._enable_rotate    = False
         self._rotate_pending   = False # flag for deferred execution
-        self._ring_model = [PixelState() for _ in range(self._pixel_count)]
+        self._ring_model = [PixelState() for _ in range(self._ring_count)]
         # theme
         self._enable_theme     = False
         self._pulse_steps      = 40
@@ -61,37 +61,41 @@ class RingController(STM32Controller):
             'grey': self._grey,
             'dark': self._dark
         }
+        self._ring = self._create_ring()
         self.reset_ring()
         self._last_update_ts  = self._get_time()
         self._ring_timer_hz = 24
         self._ring_timer = self._create_ring_timer()
         self._radiozoa_started   = False
         self._pixel.set_color(0, COLOR_BLACK)
+#       print('ring controller ready.')
         # ready
 
-    def _create_ring_timer(self):
-        from pyb import Timer
-
-        _ring_timer = Timer(1)
-        _ring_timer.init(freq=self._ring_timer_hz, callback=self._action)
-        return _ring_timer
-
-    def _create_pixel(self):
+    def _create_ring(self):
         from pixel import Pixel
 
-        _pixel_pin   = self._config['pixel_pin']
-        family       = self._config['family']
-        if family == 'TINYS3':
-            import tinys3
-
-            _pixel_pin = tinys3.RGB_DATA
-            tinys3.set_pixel_power(1)
-        _pixel = Pixel(pin=_pixel_pin, pixel_count=self._pixel_count, color_order=self._config['color_order'])
-        print('NeoPixel ring with {} pixels configured on pin {}'.format(self._pixel_count, _pixel_pin))
-        _pixel.set_color(0, COLOR_CYAN)
+        _ring_pin   = self._config['ring_pin']
+        _ring = Pixel(pin=_ring_pin, pixel_count=self._ring_count, color_order=self._config['color_order'])
+        print('NeoPixel ring with {} pixels configured on pin {}'.format(self._ring_count, _ring_pin))
+        _ring.set_color(0, COLOR_CYAN)
         time.sleep_ms(100)
-        _pixel.set_color(0, COLOR_BLACK)
-        return _pixel
+        _ring.set_color(0, COLOR_BLACK)
+        return _ring
+
+    def _create_ring_timer(self):
+        family = self._config['family']
+        if "STM32" in family:
+            from pyb import Timer
+
+            _ring_timer = Timer(1)
+            _ring_timer.init(freq=self._ring_timer_hz, callback=self._action)
+            return _ring_timer
+        else:
+            from machine import Timer
+
+            _ring_timer = Timer(1)
+            _ring_timer.init(freq=self._ring_timer_hz, mode=Timer.PERIODIC, callback=self._action)
+            return _ring_timer
 
     # ring processing ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -110,13 +114,14 @@ class RingController(STM32Controller):
     def _update_ring(self):
         for index in range(24):
             rotated_index = (index - self._ring_offset) % 24
-            self._pixel.set_color(index, self._ring_model[rotated_index].color)
+            self._ring.set_color(index, self._ring_model[rotated_index].color)
 
     def _set_ring_color(self, index, color):
+#       print('set ring color at {} to {}'.format(index, color))
         actual_index = (index + self._ring_offset) % 24
         self._ring_model[actual_index].base_color = color
         self._ring_model[actual_index].color = color.rgb
-        self._pixel.set_color(index, color.rgb)
+        self._ring.set_color(index, color.rgb)
 
     def _restart_timer(self, freq=None):
         '''
@@ -239,7 +244,7 @@ class RingController(STM32Controller):
                         if not color:
                             print("ERROR: could not find color: arg2: '{}'; arg3: '{}'".format(arg2, arg3))
                             return Controller._PACKED_ERR, COLOR_RED
-                        for idx in range(self._pixel_count):
+                        for idx in range(self._ring_count):
                             self._set_ring_color(idx, color)
                         return Controller._PACKED_ACK, COLOR_DARK_GREEN
                 else:
@@ -250,9 +255,13 @@ class RingController(STM32Controller):
                             self._set_ring_color(index, color)
                             return Controller._PACKED_ACK, COLOR_DARK_GREEN
                     else:
-                        print("ERROR: index value {} out of bounds (1-{}).".format(index, self._pixel_count))
+                        print("ERROR: index value {} out of bounds (1-{}).".format(index, self._ring_count))
                         return Controller._PACKED_ERR, COLOR_RED
                 print("ERROR: could not process input: '{}'".format(cmd))
+            except Exception as e:
+                print('ERROR: {} raised by ring command: {}'.format(type(e), e))
+                sys.print_exception(e)
+                raise
             finally:
                 self._enable_rotate = _rotating
             return Controller._PACKED_ERR, COLOR_RED
@@ -288,68 +297,74 @@ class RingController(STM32Controller):
                 return Controller._PACKED_ERR, COLOR_RED
 
         elif arg0 == "theme":
-            if arg1:
-                if arg1 == 'on':
-                    self._init_theme()
-                    self._enable_theme = True
-                    return Controller._PACKED_ACK, COLOR_DARK_GREEN
-                elif arg1 == 'off':
-                    self._enable_theme = False
-                    self._restart_timer()
-                    return Controller._PACKED_ACK, COLOR_DARK_GREEN
-                elif arg1 == 'hz':
-                    hz = int(arg2)
-                    if hz > 0:
-                        self._restart_timer(hz)
+            try:
+#               print("theme '{}' with arg0: '{}'; arg1: '{}'; arg2: '{}'; arg3: '{}'; arg4: '{}'".format(cmd, arg0, arg1, arg2, arg3, arg4))
+                if arg1:
+                    if arg1 == 'on':
+                        self._init_theme()
+                        self._enable_theme = True
                         return Controller._PACKED_ACK, COLOR_DARK_GREEN
-                    return Controller._PACKED_ERR, COLOR_RED
-                elif arg1 == 'pixels':
-                    _themed = self._enable_theme
-                    try:
+                    elif arg1 == 'off':
                         self._enable_theme = False
-                        target = int(arg2)
-                        if 1 <= target <= self._pixel_count:
-                            self._theme_target_pixels = target
-                            self._init_theme(reset=True)
-                            return Controller._PACKED_ACK, COLOR_DARK_GREEN
-                        return Controller._PACKED_ERR, COLOR_RED
-                    finally:
-                        self._enable_theme = _themed
-
-                elif arg1 in self._palettes:
-                    _themed = self._enable_theme
-                    _rotating = self._enable_rotate
-                    self._enable_rotate = False
-                    self._enable_theme = False
-                    self._ring_offset = 0
-                    try:
-                        target = int(arg2)
-                        self._theme_target_pixels = target
-                        if 1 <= target <= self._pixel_count:
-                            self._populate(target, arg1)
-                            return Controller._PACKED_ACK, COLOR_DARK_GREEN
-                        else:
-                            return Controller._PACKED_ERR, COLOR_RED
-                    except Exception as e:
-                        print('ERROR: {} raised with palette name: {}'.format(type(e), e))
-                        return Controller._PACKED_ERR, COLOR_RED
-                    finally:
-                        self._enable_theme = _themed
-                        self._enable_rotate = _rotating
-                    return Controller._PACKED_ACK, COLOR_DARK_GREEN
-
-                elif arg1 == 'steps':
-                    steps = int(arg2)
-                    if steps > 0:
-                        self._pulse_steps = steps
+                        self._restart_timer()
                         return Controller._PACKED_ACK, COLOR_DARK_GREEN
-                    return Controller._PACKED_ERR, COLOR_RED
+                    elif arg1 == 'hz':
+                        hz = int(arg2)
+                        if hz > 0:
+                            self._restart_timer(hz)
+                            return Controller._PACKED_ACK, COLOR_DARK_GREEN
+                        return Controller._PACKED_ERR, COLOR_RED
+                    elif arg1 == 'pixels':
+                        _themed = self._enable_theme
+                        try:
+                            self._enable_theme = False
+                            target = int(arg2)
+                            if 1 <= target <= self._ring_count:
+                                self._theme_target_pixels = target
+                                self._init_theme(reset=True)
+                                return Controller._PACKED_ACK, COLOR_DARK_GREEN
+                            return Controller._PACKED_ERR, COLOR_RED
+                        finally:
+                            self._enable_theme = _themed
+
+                    elif arg1 in self._palettes:
+                        _themed = self._enable_theme
+                        _rotating = self._enable_rotate
+                        self._enable_rotate = False
+                        self._enable_theme = False
+                        self._ring_offset = 0
+                        try:
+                            target = int(arg2)
+                            self._theme_target_pixels = target
+                            if 1 <= target <= self._ring_count:
+                                self._populate(target, arg1)
+                                return Controller._PACKED_ACK, COLOR_DARK_GREEN
+                            else:
+                                return Controller._PACKED_ERR, COLOR_RED
+                        except Exception as e:
+                            print('ERROR: {} raised with palette name: {}'.format(type(e), e))
+                            return Controller._PACKED_ERR, COLOR_RED
+                        finally:
+                            self._enable_theme = _themed
+                            self._enable_rotate = _rotating
+                        return Controller._PACKED_ACK, COLOR_DARK_GREEN
+
+                    elif arg1 == 'steps':
+                        steps = int(arg2)
+                        if steps > 0:
+                            self._pulse_steps = steps
+                            return Controller._PACKED_ACK, COLOR_DARK_GREEN
+                        return Controller._PACKED_ERR, COLOR_RED
+                    else:
+                        print("ERROR: could not process input:  '{}'".format(cmd))
+                        return Controller._PACKED_ERR, COLOR_RED
+                    return Controller._PACKED_ACK, COLOR_DARK_GREEN
                 else:
-                    print("ERROR: could not process input:  '{}'".format(cmd))
                     return Controller._PACKED_ERR, COLOR_RED
-                return Controller._PACKED_ACK, COLOR_DARK_GREEN
-            else:
-                return Controller._PACKED_ERR, COLOR_RED
+            except Exception as e:
+                print('ERROR: {} raised by theme command: {}'.format(type(e), e))
+                sys.print_exception(e)
+                raise
 
         else:
             return None, None
