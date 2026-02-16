@@ -135,8 +135,9 @@ reliability is tied to all three.
 The default baud rate of a Raspberry Pi is 100kHz. You can increase this to
 400kHz or even 1MHz. At 1MHz this will permit reasonably reliable transactions
 of up to the 62 character limit with a delay time as low as 11ms, with some
-packet losses. With a shorter packet size of 40 characters a delay of 8ms is
-possible, 6-7ms with a packet size of 20 characters.
+packet losses. Though note that some devices cannot function at 1MHz reliably.
+With a shorter packet size of 40 characters a delay of 8ms is possible, 6-7ms
+with a packet size of 20 characters.
 
 
 Files
